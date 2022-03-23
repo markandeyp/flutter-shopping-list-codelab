@@ -1,0 +1,615 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Offline-First apps with Flutter &amp; Realm</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="offline-first-apps-with-realm"
+                  title="Offline-First apps with Flutter &amp; Realm"
+                  environment="web"
+                  feedback-link="https://github.com/markandeyp/flutter-shopping-list-codelab/issues">
+    
+      <google-codelab-step label="Introduction" duration="2">
+        <p>Choosing a data store for mobile applications can be a daunting experience for flutter developers.</p>
+<p>Realm&#39;s mobile database is an open-source, developer-friendly alternative to KeyValue pairs, SQLite and Firestore. Start in minutes and save yourself weeks of work.</p>
+<p>Realm is <em>offline first</em>, <em>object-oriented</em>, <em>intuitive</em> and is <em>built for mobiles</em>.</p>
+<p>In this workshop, we will build an offline mobile app using <em>Flutter</em> and <em>Realm SDK</em>.</p>
+<p class="image-container"><img alt="App Screenshot 1" style="width: 300.00px" src="img/c782c5086b4b2086.png"><img alt="App Screenshot 2" style="width: 300.00px" src="img/e062cbfa69189afc.png"></p>
+<p><strong>Pre-Requisites</strong> You will need below to go though this workshop</p>
+<ul>
+<li>flutter installed &amp; configured</li>
+<li>your favourite IDE</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create a Flutter App" duration="3">
+        <p>Create a flutter app using below command</p>
+<pre><code language="language-bash" class="language-bash">flutter create shoppinglist
+</code></pre>
+<p>This will create a folder named shoppinglist in your current working directory which will contain the <em>sourcecode</em> for your flutter application and will look something like this.</p>
+<p class="image-container"><img alt="Code structure" style="width: 300.00px" src="img/77bf4f0ac9d0d43c.png"></p>
+<p>Open the directory as a project in your favourite IDE.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Install Realm for Flutter" duration="3">
+        <p>Next, we will add realm as a dependency in our <code>pubspec.yaml</code>. This can be done using below command</p>
+<pre><code language="language-bash" class="language-bash">flutter pub add realm-flutter
+</code></pre>
+<p>Alternatively, you can open the <code>pubspec.yaml</code> file and add <strong>realm</strong> as a dependency:</p>
+<pre><code language="language-yaml" class="language-yaml">dependencies:
+  # other dependecies here
+  realm: ^0.2.0+alpha
+</code></pre>
+<p>After adding the above, you need to run below command:</p>
+<pre><code language="language-bash" class="language-bash">flutter pub get
+</code></pre>
+<p>That&#39;s it. Now you have everything you need to get started with <strong>Realm</strong></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create a Schema" duration="5">
+        <p>Schema is the simplest unit in any Realm application. A schema defines the structure of data your application will be utilising.</p>
+<p>For example, an <code>Item</code> in our <strong>Shopping List</strong> can have two properties</p>
+<ul>
+<li>text: string</li>
+<li>done: boolean</li>
+</ul>
+<p>To represent an Item in our application, we will create a Schema. To do that, create a directory named <code>schemas</code> in the <code>lib</code> directory. This directory will contain all the schemas used in the application.</p>
+<p>Now create a file named <code>item.dart</code> with below content.</p>
+<pre><code language="language-dart" class="language-dart">import &#39;package:realm/realm.dart&#39;;
+part &#39;item.g.dart&#39;;
+
+@RealmModel()
+class _Item {
+  @PrimaryKey()
+  late String text;
+  late bool done;
+}
+</code></pre>
+<aside class="special"><p><code>@RealmModel</code> is an <code>Annotation</code> class used to define <code>Realm</code> data model classes and their properties.</p>
+<p><code>@PrimaryKey</code> Indicates a primary key property. enables quick lookup of objects and enforces uniqueness of the values. It can be</p>
+<ul>
+<li>applied to a single property in a <code>RealmModel</code> class</li>
+<li>either <code>String</code> or <code>int</code></li>
+</ul>
+</aside>
+<h2 is-upgraded>Generate Schema from the <code>RealmModel</code> class</h2>
+<p>Now that we have out schema class defined, we need to generate the Realm schema. Realm schema is generated by combining the <code>_Item</code> and <code>RealmObject</code> classes. Realm has made this task simpler for us. All we need to do is to run the below command</p>
+<pre><code language="language-bash" class="language-bash">flutter pub run realm generate
+</code></pre>
+<p>The above command will generate a new file <code>item.g.dart</code> containing a class <code>Item</code>.</p>
+<pre><code language="language-dart" class="language-dart">// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of &#39;item.dart&#39;;
+
+// **************************************************************************
+// RealmObjectGenerator
+// **************************************************************************
+
+class Item extends _Item with RealmEntity, RealmObject {
+  Item(
+    String text,
+    bool done,
+  ) {
+    RealmObject.set(this, &#39;text&#39;, text);
+    RealmObject.set(this, &#39;done&#39;, done);
+  }
+
+  Item._();
+
+  @override
+  String get text =&gt; RealmObject.get&lt;String&gt;(this, &#39;text&#39;) as String;
+  @override
+  set text(String value) =&gt; throw RealmUnsupportedSetError();
+
+  @override
+  bool get done =&gt; RealmObject.get&lt;bool&gt;(this, &#39;done&#39;) as bool;
+  @override
+  set done(bool value) =&gt; RealmObject.set(this, &#39;done&#39;, value);
+
+  @override
+  Stream&lt;RealmObjectChanges&lt;Item&gt;&gt; get changes =&gt;
+      RealmObject.getChanges&lt;Item&gt;(this);
+
+  static SchemaObject get schema =&gt; _schema ??= _initSchema();
+  static SchemaObject? _schema;
+  static SchemaObject _initSchema() {
+    RealmObject.registerFactory(Item._);
+    return const SchemaObject(Item, [
+      SchemaProperty(&#39;text&#39;, RealmPropertyType.string, primaryKey: true),
+      SchemaProperty(&#39;done&#39;, RealmPropertyType.bool),
+    ]);
+  }
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Working with Realm" duration="10">
+        <h2 is-upgraded>Open a Realm</h2>
+<p>To work with <code>Realm</code>, we first need to define a <code>Configuration</code> object. The constructor takes in a list of <em>Schemas</em> you want the Realm to work with. Optionally, you can pass a <code>readOnly</code> and <code>inMemory</code> flags indicating you want the Realm to be opened in read-only mode or Realm to be loaded in-memory.</p>
+<pre><code language="language-dart" class="language-dart">Configuration _config =
+      Configuration([Item.schema], readOnly: false, inMemory: false);
+Realm _realm = Realm(_config);
+</code></pre>
+<h2 is-upgraded>Read all Items</h2>
+<pre><code language="language-dart" class="language-dart">RealmResults&lt;Item&gt; items = _realm.all&lt;Item&gt;();
+</code></pre>
+<aside class="special"><p>Write/Update/Delete operations are done in a <code>transaction</code> block. To create a transaction block, use <code>write()</code> and provide a callback as a parameter. We perform the write/update/delete operation inside the callback.</p>
+</aside>
+<h2 is-upgraded>Write an Item</h2>
+<pre><code language="language-dart" class="language-dart">_realm.write(() {
+    _realm.add&lt;Item&gt;(Item(text, false));
+});
+</code></pre>
+<h2 is-upgraded>Update an Item</h2>
+<pre><code language="language-dart" class="language-dart">_realm.write(() {
+    item.done = true;
+});
+</code></pre>
+<h2 is-upgraded>Delete an Item</h2>
+<pre><code language="language-dart" class="language-dart">_realm.write(() {
+    _realm.delete(item);
+});
+</code></pre>
+<h2 is-upgraded>Close a Realm</h2>
+<pre><code language="language-dart" class="language-dart">if (!_realm.isClosed) {
+    _realm.close();
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create an 
+ItemService for Realm operations" duration="5">
+        <p>To manage our Realm, we will create a service class which will expose methods to open/close a realm and to perform query/update/delete operations on our Realm.</p>
+<p>Create a directory <code>services</code> under <code>lib</code> directory. Add a new file <code>item.service.dart</code> with following code</p>
+<pre><code language="language-dart" class="language-dart">import &#39;package:flutter/foundation.dart&#39;;
+import &#39;package:realm/realm.dart&#39;;
+import &#39;package:shoppinglist/schemas/item.dart&#39;;
+
+class ItemService {
+  final Configuration _config =
+      Configuration([Item.schema], readOnly: false, inMemory: false);
+  late Realm _realm;
+
+  ItemService() {
+    openRealm();
+  }
+
+  openRealm() {
+    _realm = Realm(_config);
+  }
+
+  closeRealm() {
+    if (!_realm.isClosed) {
+      _realm.close();
+    }
+  }
+
+  RealmResults&lt;Item&gt; getItems() {
+    return _realm.all&lt;Item&gt;();
+  }
+
+  bool addItem(String text) {
+    try {
+      _realm.write(() {
+        _realm.add&lt;Item&gt;(Item(text, false));
+      });
+      return true;
+    } on RealmException catch (e) {
+      debugPrint(e.message);
+      return false;
+    }
+  }
+
+  bool toggleItemStatus(Item item) {
+    try {
+      _realm.write(() {
+        item.done = !item.done;
+      });
+      return true;
+    } on RealmException catch (e) {
+      debugPrint(e.message);
+      return false;
+    }
+  }
+
+  bool deleteItem(Item item) {
+    try {
+      _realm.write(() {
+        _realm.delete(item);
+      });
+      return true;
+    } on RealmException catch (e) {
+      debugPrint(e.message);
+      return false;
+    }
+  }
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ItemListView" duration="5">
+        <aside class="special"><p>Create a directory <code>components</code> in the <code>lib</code> directory. This directory will contain all the UI components used in our ShoppingList Application.</p>
+</aside>
+<p><code>ItemListView</code> is essentially a ListView which renders a list of Items in our Shopping List. <code>ItemListView</code> component takes three required parameters:</p>
+<ul>
+<li><code>items</code> - A list of <em>Item</em> objects</li>
+<li><code>onToggle</code> - A callback function to be invoked when an Item is <strong>toggled</strong></li>
+<li><code>onDelete</code> - A callback function to be invoked when an Item is <strong>deleted</strong></li>
+</ul>
+<p>Add a new file named <code>itemlist.dart</code> in <code>components</code> directory with below code:</p>
+<pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
+import &#39;package:shoppinglist/schemas/item.dart&#39;;
+
+class ItemListView extends StatelessWidget {
+  final List&lt;Item&gt; items;
+  final Function(Item) onToggle;
+  final Function(Item) onDelete;
+  const ItemListView(
+      {Key? key,
+      required this.items,
+      required this.onToggle,
+      required this.onDelete})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+        padding: const EdgeInsets.all(10),
+        shrinkWrap: true,
+        itemBuilder: getItemBuilder,
+        scrollDirection: Axis.vertical,
+        physics: const BouncingScrollPhysics(),
+        separatorBuilder: getSeparatorBuilder,
+        itemCount: items.length);
+  }
+
+  Widget getItemBuilder(BuildContext context, int index) {
+    Item item = items[index];
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(children: [
+          Checkbox(
+              value: item.done, onChanged: (bool? value) =&gt; {onToggle(item)}),
+          Text(item.text,
+              style: TextStyle(
+                  decorationColor: Colors.indigo,
+                  decorationThickness: 2,
+                  fontSize: 20,
+                  decoration: getTextDecoration(item.done)))
+        ]),
+        IconButton(
+            onPressed: () =&gt; {onDelete(item)},
+            icon: Icon(
+              Icons.delete,
+              color: Colors.indigo,
+              size: 25,
+              semanticLabel: &#39;Delete ${item.text}&#39;,
+            ))
+      ],
+    );
+  }
+
+  Widget getSeparatorBuilder(BuildContext context, int index) {
+    return const Divider(
+      thickness: 1,
+      color: Colors.indigo,
+    );
+  }
+
+  TextDecoration getTextDecoration(bool isDone) {
+    return isDone ? TextDecoration.lineThrough : TextDecoration.none;
+  }
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="AddItemView" duration="3">
+        <p><code>AddItemView</code> is comprised of an Input Field and a Button. User can enter an item in the Input Field and when they click the Button, a new item should be created.</p>
+<p><code>AddItemView</code> component takes one required parameters:</p>
+<ul>
+<li><code>onAdd</code> - A callback function to be invoked when an Item is <strong>added</strong></li>
+</ul>
+<p>Add a new file named <code>additem.dart</code> in <code>components</code> directory with below code:</p>
+<pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
+
+class AddItemView extends StatelessWidget {
+  final Function(String) onAdd;
+  final TextEditingController textController = TextEditingController();
+  AddItemView({Key? key, required this.onAdd}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          TextField(
+            controller: textController,
+            style: const TextStyle(fontSize: 20),
+            decoration: const InputDecoration(hintText: &#39;Enter item&#39;),
+          ),
+          ElevatedButton(
+              onPressed: () =&gt; {
+                    if (textController.text.isNotEmpty)
+                      {onAdd(textController.text)}
+                  },
+              child: const Text(&#39;Add Item&#39;))
+        ],
+      ),
+    );
+  }
+}
+
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ShoppingListView" duration="3">
+        <p><code>ShoppingListView</code> is composed of the previously created components <code>ItemListView</code> and <code>AddItemView</code> and presents an aggregated view where the User can add and Item and view the List of existing Items.</p>
+<p><code>ShoppingListView</code> component takes four required parameters:</p>
+<ul>
+<li><code>onAdd</code> - A callback function to be invoked when an Item is <strong>added</strong></li>
+<li><code>onToggle</code> - A callback function to be invoked when an Item is <strong>toggled</strong></li>
+<li><code>onDelete</code> - A callback function to be invoked when an Item is <strong>deleted</strong></li>
+<li><code>items</code> - A list of <em>Item</em> objects</li>
+</ul>
+<p>Add a new file named <code>shoppinglist.dart</code> in <code>components</code> directory with below code:</p>
+<pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
+import &#39;package:shoppinglist/components/additem.dart&#39;;
+import &#39;package:shoppinglist/components/itemlist.dart&#39;;
+import &#39;package:shoppinglist/schemas/item.dart&#39;;
+
+class ShoppingListView extends StatelessWidget {
+  final Function(String) onAdd;
+  final Function(Item) onToggle;
+  final Function(Item) onDelete;
+  final List&lt;Item&gt; items;
+
+  const ShoppingListView(
+      {Key? key,
+      required this.onAdd,
+      required this.onToggle,
+      required this.onDelete,
+      required this.items})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.indigoAccent])),
+      child: Column(children: [
+        AddItemView(
+          onAdd: onAdd,
+        ),
+        Expanded(
+            child: ItemListView(
+          items: items,
+          onToggle: onToggle,
+          onDelete: onDelete,
+        ))
+      ]),
+    );
+  }
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Home Screen" duration="5">
+        <p>Now that we have our UI components and our Realm service are ready, we can stitch them together in our Home Screen. In our home screen, we will render our main app with ShoppingList as a child. We will also create callback function <code>onAdd</code>, <code>onToggle</code> and <code>onDelete</code> and handle various Realm operations in these functions.</p>
+<p>Open <code>main.dart</code> in <code>lib</code> directory and replace the existing code with below:</p>
+<pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
+import &#39;package:realm/realm.dart&#39;;
+import &#39;package:shoppinglist/components/shoppinglist.dart&#39;;
+import &#39;package:shoppinglist/schemas/item.dart&#39;;
+import &#39;package:shoppinglist/services/item.service.dart&#39;;
+
+void main() {
+  final ItemService service = ItemService();
+  runApp(MyApp(
+    service: service,
+  ));
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key, required this.service}) : super(key: key);
+
+  final ItemService service;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: &#39;Shopping List&#39;,
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+      ),
+      home: MyHomePage(
+        title: &#39;Shopping List&#39;,
+        service: service,
+      ),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key, required this.title, required this.service})
+      : super(key: key);
+
+  final String title;
+  final ItemService service;
+
+  @override
+  State&lt;MyHomePage&gt; createState() =&gt; _MyHomePageState();
+}
+
+class _MyHomePageState extends State&lt;MyHomePage&gt; {
+  late RealmResults&lt;Item&gt; items;
+
+  onAdd(String text) {
+    debugPrint(&#39;Adding $text&#39;);
+    if (widget.service.addItem(text)) {
+      debugPrint(&#39;Added $text&#39;);
+      loadItems();
+    } else {
+      debugPrint(&#39;Something went wrong while adding $text&#39;);
+    }
+  }
+
+  onToggle(Item item) {
+    debugPrint(&#39;Toggling status for ${item.text}&#39;);
+    if (widget.service.toggleItemStatus(item)) {
+      loadItems();
+    } else {
+      debugPrint(&#39;Something went wrong while toggling status for ${item.text}&#39;);
+    }
+  }
+
+  onDelete(Item item) {
+    debugPrint(&#39;Deleting ${item.text}&#39;);
+    if (widget.service.deleteItem(item)) {
+      loadItems();
+    } else {
+      debugPrint(&#39;Something went wrong while deleting ${item.text}&#39;);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadItems();
+  }
+
+  void loadItems() {
+    setState(() {
+      items = widget.service.getItems();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
+      ),
+      body: ShoppingListView(
+        items: items.toList(),
+        onAdd: onAdd,
+        onToggle: onToggle,
+        onDelete: onDelete,
+      ),
+    );
+  }
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run Application" duration="5">
+        <p>That&#39;s it. Our application is ready to be launched. Save all the code-files.</p>
+<p>To launch the flutter application, we will first launch the emulator. Let&#39;s find the list of available emulators.</p>
+<pre><code language="language-bash" class="language-bash">flutter emulators
+</code></pre>
+<p class="image-container"><img alt="Flutter Emulators output" style="width: 600.00px" src="img/35dfdf3e2de9e447.png"></p>
+<p>Pick one of the emulator IDs from above output and launch one using below command:</p>
+<pre><code language="language-bash" class="language-bash">flutter emulators --launch Pixel4_API30
+</code></pre>
+<p>After the emulator is launched, you can find it&#39;s device-id using below command:</p>
+<pre><code language="language-bash" class="language-bash">flutter devices
+</code></pre>
+<p class="image-container"><img alt="Flutter devices output" style="width: 600.00px" src="img/f16d60f16035c880.png"></p>
+<p>Copy the device-id (<code>emulator-5554</code>), and run the flutter app using below command:</p>
+<pre><code language="language-bash" class="language-bash">flutter run -d emulator-5554
+</code></pre>
+<aside class="special"><p>If you are not a big fan of commands, you can use your IDE to launch emulators and run Flutter applications.</p>
+</aside>
+<p class="image-container"><img alt="Flutter App Run" style="width: 300.00px" src="img/3979261a18e574d2.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Tips &amp; Further Resources" duration="1">
+        <p>Now that you have a Realm application running, you can continue adding more schemas or update existing schemas.</p>
+<p>Whenever you make a change to a schema, you need to run below command to generate RealmObjects based on your schema definition.</p>
+<pre><code language="language-bash" class="language-bash">flutter pub run realm generate
+</code></pre>
+<p>You can run the above command with a watch option to generate/update RealmObjects as and when you update your schema.</p>
+<pre><code language="language-bash" class="language-bash">flutter pub run realm generate --watch
+</code></pre>
+<aside class="warning"><p>Please note, when you update your realm schema, you need to <strong><em>DELETE</em></strong> your current realm. To do that, simply execute below code before opening your realm.</p>
+<pre><code language="language-dart" class="language-dart">Realm.deleteRealm(Configuration.defaultPath);
+</code></pre>
+</aside>
+<p>The sourcecode for this application is available <a href="https://www.mongodb.com/realm" target="_blank">here</a></p>
+<aside class="special"><p><code>Realm Flutter</code> is currently in <code>Alpha</code> stage. Realm is a very powerful ecosystem and is much more than a simple offline data store for your application. Realm team at MongoDB is working really hard to make various Realm features like <code>Realm Sync</code>, <code>Realm Authentication</code>, <code>Realm Functions</code> etc. available to Flutter developers.</p>
+<p>To explore further on MongoDB Realm, you can visit the official documentation <a href="https://www.mongodb.com/realm" target="_blank">here</a></p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Wrap Up" duration="1">
+        <p>Scan the QR code to connect with me on LinkedIn</p>
+<p class="image-container"><img alt="QR LinkedIn" style="width: 300.00px" src="img/d9b614fb68827321.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Congratulations" duration="0">
+        <p class="image-container"><img alt="Congratulations" style="width: 300.00px" src="img/e950c90e2f0a9a20.png"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

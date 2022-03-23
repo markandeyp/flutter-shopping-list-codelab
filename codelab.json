@@ -1,0 +1,25 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2022-03-23T23:22:40Z",
+  "id": "offline-first-apps-with-realm",
+  "duration": 51,
+  "title": "Offline-First apps with Flutter \u0026 Realm",
+  "summary": "Learn to build offline apps with Flutter \u0026 Realm in this codelab",
+  "source": "lab.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "flutter",
+    "codelab"
+  ],
+  "tags": [
+    "web"
+  ],
+  "feedback": "https://github.com/markandeyp/flutter-shopping-list-codelab/issues",
+  "url": "offline-first-apps-with-realm"
+}

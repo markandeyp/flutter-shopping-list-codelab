@@ -185,13 +185,12 @@ Realm _realm = Realm(_config);
 
       </google-codelab-step>
     
-      <google-codelab-step label="Create an 
-ItemService for Realm operations" duration="5">
+      <google-codelab-step label="Create a Service for Realm operations" duration="5">
         <p>To manage our Realm, we will create a service class which will expose methods to open/close a realm and to perform query/update/delete operations on our Realm.</p>
-<p>Create a directory <code>services</code> under <code>lib</code> directory. Add a new file <code>item.service.dart</code> with following code</p>
+<p>Create a directory <code>services</code> under <code>lib</code> directory. Add a new file <code>item_service.dart</code> with following code</p>
 <pre><code language="language-dart" class="language-dart">import &#39;package:flutter/foundation.dart&#39;;
 import &#39;package:realm/realm.dart&#39;;
-import &#39;package:shoppinglist/schemas/item.dart&#39;;
+import &#39;../schemas/item.dart&#39;;
 
 class ItemService {
   final Configuration _config =
@@ -203,6 +202,7 @@ class ItemService {
   }
 
   openRealm() {
+    // Realm.deleteRealm(Configuration.defaultPath);
     _realm = Realm(_config);
   }
 
@@ -266,9 +266,9 @@ class ItemService {
 <li><code>onToggle</code> - A callback function to be invoked when an Item is <strong>toggled</strong></li>
 <li><code>onDelete</code> - A callback function to be invoked when an Item is <strong>deleted</strong></li>
 </ul>
-<p>Add a new file named <code>itemlist.dart</code> in <code>components</code> directory with below code:</p>
+<p>Add a new file named <code>item_list_view.dart</code> in <code>components</code> directory with below code:</p>
 <pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
-import &#39;package:shoppinglist/schemas/item.dart&#39;;
+import &#39;../schemas/item.dart&#39;;
 
 class ItemListView extends StatelessWidget {
   final List&lt;Item&gt; items;
@@ -342,7 +342,7 @@ class ItemListView extends StatelessWidget {
 <ul>
 <li><code>onAdd</code> - A callback function to be invoked when an Item is <strong>added</strong></li>
 </ul>
-<p>Add a new file named <code>additem.dart</code> in <code>components</code> directory with below code:</p>
+<p>Add a new file named <code>add_item_view.dart</code> in <code>components</code> directory with below code:</p>
 <pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
 
 class AddItemView extends StatelessWidget {
@@ -389,11 +389,11 @@ class AddItemView extends StatelessWidget {
 <li><code>onDelete</code> - A callback function to be invoked when an Item is <strong>deleted</strong></li>
 <li><code>items</code> - A list of <em>Item</em> objects</li>
 </ul>
-<p>Add a new file named <code>shoppinglist.dart</code> in <code>components</code> directory with below code:</p>
+<p>Add a new file named <code>shopping_list_view.dart</code> in <code>components</code> directory with below code:</p>
 <pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
-import &#39;package:shoppinglist/components/additem.dart&#39;;
-import &#39;package:shoppinglist/components/itemlist.dart&#39;;
-import &#39;package:shoppinglist/schemas/item.dart&#39;;
+import &#39;./add_item_view.dart&#39;;
+import &#39;./item_list_view.dart&#39;;
+import &#39;../schemas/item.dart&#39;;
 
 class ShoppingListView extends StatelessWidget {
   final Function(String) onAdd;
@@ -441,9 +441,9 @@ class ShoppingListView extends StatelessWidget {
 <p>Open <code>main.dart</code> in <code>lib</code> directory and replace the existing code with below:</p>
 <pre><code language="language-dart" class="language-dart">import &#39;package:flutter/material.dart&#39;;
 import &#39;package:realm/realm.dart&#39;;
-import &#39;package:shoppinglist/components/shoppinglist.dart&#39;;
-import &#39;package:shoppinglist/schemas/item.dart&#39;;
-import &#39;package:shoppinglist/services/item.service.dart&#39;;
+import &#39;./components/shopping_list_view.dart&#39;;
+import &#39;./schemas/item.dart&#39;;
+import &#39;./services/item_service.dart&#39;;
 
 void main() {
   final ItemService service = ItemService();
